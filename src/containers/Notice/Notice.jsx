@@ -21,13 +21,17 @@ export default class Notice extends React.Component {
     this.startInterval(this.state.money/1)
   }
   getNotice() {
-    Notification.requestPermission().then(function (permission) {
-      if (permission === 'granted') {
-        console.log('用户允许通知');
-      } else if (permission === 'denied') {
-        console.log('用户拒绝通知');
-      }
-    });
+    try {
+      Notification.requestPermission().then(function (permission) {
+        if (permission === 'granted') {
+          console.log('用户允许通知');
+        } else if (permission === 'denied') {
+          console.log('用户拒绝通知');
+        }
+      });
+    } catch (error) {
+      alert(error)
+    }
   }
   startInterval(money) {
     clearInterval(intervalBox)
@@ -39,11 +43,16 @@ export default class Notice extends React.Component {
           fetchTime: moment().format('HH:mm:ss')
         })
         if (data[0].price >= money) {
-          var n = new Notification('attention', {
-            body: data[0].price,
-            tag: data[0].price,
-            requireInteraction: true
-          })
+          try {
+            var n = new Notification('attention', {
+              body: data[0].price,
+              tag: data[0].price,
+              requireInteraction: true
+            })
+          }catch(error) {
+            alert(data[0].price)
+          }
+          
         }
       })
     }, 20000)
