@@ -1,19 +1,18 @@
 import React from 'react'
 import axios from 'axios'
 import moment from 'moment'
+import jsonp from 'jsonp'
+
 
 let intervalBox = null
 
-let status = {
-  buy: false,
-  sell: false
-}
 
 export default class Notice extends React.Component {
   constructor() {
     super()
     this.startInterval = this.startInterval.bind(this)
     this.getData = this.getData.bind(this)
+    this.fetchHuilvData = this.fetchHuilvData.bind(this)
   }
   componentWillMount() {
     this.setState({
@@ -21,13 +20,15 @@ export default class Notice extends React.Component {
       nowMoney: 0,
       fetchTime: '',
       buyList: [],
-      sellList: []
+      sellList: [],
+      hl: ''
     })
     this.getNotice()
   }
   componentDidMount() {
     this.getData()
     this.getListData()
+    this.fetchHuilvData()
     this.startInterval(this.state.money/1)
   }
   getNotice() {
@@ -79,13 +80,13 @@ export default class Notice extends React.Component {
         sellList: []
       })
       this.getListData()
+      this.fetchHuilvData()
     }, 60000)
   }
   fetchData() {
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public?coinId=2&tradeType=0&currentPage=1&payWay=&country=&merchant=1&online=1&range=0')
   }
   fetchBuyData(page) {
-    status.buy = false
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
       params: {
         coinId:2,
@@ -105,12 +106,10 @@ export default class Notice extends React.Component {
       if(res.data.data.length == 10) {
         this.fetchBuyData(page+1)
       } else {
-        status.buy = true
       }
     })
   }
   fetchSellData(page) {
-    status.sell = false
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
       params: {
         coinId:2,
@@ -130,8 +129,14 @@ export default class Notice extends React.Component {
       if(res.data.data.length == 10) {
         this.fetchSellData(page+1)
       } else {
-        status.sell = true
       }
+    })
+  }
+  fetchHuilvData() {
+    return jsonp("http://api.money.126.net/data/feed/FX_USDCNY", null, (err, data) => {
+      this.setState({
+        hl: data.FX_USDCNY.price
+      })
     })
   }
   change(name, value) {
@@ -162,6 +167,7 @@ export default class Notice extends React.Component {
       </div>
       
         <div>
+          <h2>汇率：{this.state.hl}</h2>
           <div style={{
             width:'50%',
             float: 'left',
@@ -207,22 +213,11 @@ const BuyRecords = (list, type) => {
   })
   let avgPrice = (totalPrice/totalCount).toFixed(3)
   
-  
-  let changePrice = 0
-  
-  if (status[type]) {
-    const beforeTotalPrice = window.localStorage.getItem(type)
-    if (beforeTotalPrice) {
-      changePrice = Math.abs(beforeTotalPrice/1 - totalPrice)
-    }
-    window.localStorage.setItem(type, totalPrice)
-  }
 
   return (
     <div>
       <div>平均：{avgPrice}</div>
       <div>商家数：{totalCount}</div>
-      <div>上次差额：{changePrice}</div>
 
       {
         Object.keys(priceLevel).map(it => {
