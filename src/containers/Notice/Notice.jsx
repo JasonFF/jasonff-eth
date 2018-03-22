@@ -74,7 +74,7 @@ export default class Notice extends React.Component {
         sellList: []
       })
       this.getListData()
-    }, 20000)
+    }, 60000)
   }
   fetchData() {
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public?coinId=2&tradeType=0&currentPage=1&payWay=&country=&merchant=1&online=1&range=0')
