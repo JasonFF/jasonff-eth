@@ -194,7 +194,7 @@ const BuyRecords = (list) => {
     totalPrice = totalPrice + price/1
     totalCount++
   })
-  let avgPrice = totalPrice/totalCount
+  let avgPrice = (totalPrice/totalCount).toFixed(3)
   return (
     <div>
       <div>平均：{avgPrice}</div>
