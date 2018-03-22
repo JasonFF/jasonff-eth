@@ -11,7 +11,7 @@ import Index from '../Index/Index'
 
 const App = () => (
   <Router>
-    <div>
+    <div style={{width:'100%'}}>
       <Route exact path="/" component={Index}></Route>
       <Route exact path="/calculate" component={Calculate}/>
       <Route exact path="/notice" component={Notice}/>

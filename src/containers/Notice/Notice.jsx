@@ -14,12 +14,15 @@ export default class Notice extends React.Component {
     this.setState({
       money: 6.51,
       nowMoney: 0,
-      fetchTime: ''
+      fetchTime: '',
+      buyList: [],
+      sellList: []
     })
     this.getNotice()
   }
   componentDidMount() {
     this.getData()
+    this.getListData()
     this.startInterval(this.state.money/1)
   }
   getNotice() {
@@ -57,14 +60,68 @@ export default class Notice extends React.Component {
       }
     })
   }
+  getListData() {
+    let currentPage = 1
+    this.fetchBuyData(currentPage)
+    this.fetchSellData(currentPage)
+  }
   startInterval(money) {
     clearInterval(intervalBox)
     intervalBox = setInterval(() => {
       this.getData(money)
+      this.setState({
+        buyList: [],
+        sellList: []
+      })
+      this.getListData()
     }, 20000)
   }
   fetchData() {
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public?coinId=2&tradeType=0&currentPage=1&payWay=&country=&merchant=1&online=1&range=0')
+  }
+  fetchBuyData(page) {
+    return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
+      params: {
+        coinId:2,
+        tradeType:1,
+        currentPage: 1,
+        payWay:"",
+        country:"",
+        merchant:1,
+        online:1,
+        range:0,
+        currPage: page
+      }
+    }).then(res => {
+      this.setState({
+        buyList: this.state.buyList.concat(res.data.data)
+      })
+      if(res.data.data.length == 10) {
+        this.fetchBuyData(page+1)
+      }
+    })
+  }
+  fetchSellData(page) {
+    return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
+      params: {
+        coinId:2,
+        tradeType:0,
+        currentPage: 1,
+        payWay:"",
+        country:"",
+        merchant:1,
+        online:1,
+        range:0,
+        currPage: page
+      }
+    }).then(res => {
+      this.setState({
+        sellList: this.state.sellList.concat(res.data.data)
+      })
+      if(res.data.data.length == 10) {
+        this.fetchSellData(page+1)
+      }
+    })
   }
   change(name, value) {
     this.setState({
@@ -73,18 +130,65 @@ export default class Notice extends React.Component {
     this.startInterval(value/1)
   }
   render() {
+
     return ( 
       <div style={{
-        padding: '10%'
+        padding: '5%',
+        background: '#181B2A',
+        color: '#eee'
       }}>
-      <h2>{this.state.nowMoney}</h2>
-      <h3>{this.state.fetchTime}</h3>
-        <input type = "text"
-        value={this.state.money}
-        onChange = {
-          (e) => this.change('money', e.target.value)
-        }/>
+      <div style={{
+        marginBottom: '30px'
+      }}>
+        <h2>{this.state.nowMoney}</h2>
+        <h3>{this.state.fetchTime}</h3>
+          <input type = "text"
+          value={this.state.money}
+          onChange = {
+            (e) => this.change('money', e.target.value)
+          }/>
+      </div>
+      
+        <div>
+          <div style={{
+            width:'50%',
+            float: 'left',
+          }}>
+            {BuyRecords(this.state.buyList)}
+          </div>
+          <div style={{
+            width:'50%',
+            float: 'right'
+          }}>
+          {BuyRecords(this.state.sellList)}
+          </div>
+          <div style={{
+            clear: 'both'
+          }}>
+
+          </div>
+        </div>
       </div>
     )
   }
+}
+
+const BuyRecords = (list) => {
+  let priceLevel = {}
+  list.forEach(it => {
+    const {price} = it
+    if (priceLevel[`$${price}`] == undefined) {
+      priceLevel[`$${price}`] = 0
+    }
+    priceLevel[`$${price}`] = priceLevel[`$${price}`] + 1
+  })
+  return (
+    <div>
+      {
+        Object.keys(priceLevel).map(it => {
+          return <p key={it}>{it}: {priceLevel[it]}</p>
+        })
+      }
+    </div>
+  )
 }
