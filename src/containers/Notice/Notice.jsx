@@ -133,7 +133,7 @@ export default class Notice extends React.Component {
     })
   }
   fetchHuilvData() {
-    return jsonp("http://api.money.126.net/data/feed/FX_USDCNY", null, (err, data) => {
+    return jsonp("https://api.money.126.net/data/feed/FX_USDCNY", null, (err, data) => {
       this.setState({
         hl: data.FX_USDCNY.price
       })
