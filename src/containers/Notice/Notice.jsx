@@ -135,7 +135,8 @@ export default class Notice extends React.Component {
       <div style={{
         padding: '5%',
         background: '#181B2A',
-        color: '#eee'
+        color: '#eee',
+        minHeight: '100%'
       }}>
       <div style={{
         marginBottom: '30px'
@@ -154,13 +155,13 @@ export default class Notice extends React.Component {
             width:'50%',
             float: 'left',
           }}>
-            {BuyRecords(this.state.buyList)}
+            {BuyRecords(this.state.buyList, "buy")}
           </div>
           <div style={{
             width:'50%',
             float: 'right'
           }}>
-          {BuyRecords(this.state.sellList)}
+          {BuyRecords(this.state.sellList, 'sell')}
           </div>
           <div style={{
             clear: 'both'
@@ -174,16 +175,29 @@ export default class Notice extends React.Component {
 }
 
 const BuyRecords = (list) => {
+  if (!list.length) {
+    return
+  }
   let priceLevel = {}
+  let totalPrice = 0
+  let topLevel = list[0].price;
+  let totalCount = 0;
   list.forEach(it => {
     const {price} = it
+    if (Math.abs(price - topLevel) > 0.05) {
+      return
+    }
     if (priceLevel[`$${price}`] == undefined) {
       priceLevel[`$${price}`] = 0
     }
-    priceLevel[`$${price}`] = priceLevel[`$${price}`] + 1
+    priceLevel[`$${price}`] = priceLevel[`$${price}`] + 1;
+    totalPrice = totalPrice + price/1
+    totalCount++
   })
+  let avgPrice = totalPrice/totalCount
   return (
     <div>
+      平均：{avgPrice}
       {
         Object.keys(priceLevel).map(it => {
           return <p key={it}>{it}: {priceLevel[it]}</p>
