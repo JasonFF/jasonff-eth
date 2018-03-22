@@ -8,6 +8,7 @@ export default class Notice extends React.Component {
   constructor() {
     super()
     this.startInterval = this.startInterval.bind(this)
+    this.getData = this.getData.bind(this)
   }
   componentWillMount() {
     this.setState({
@@ -18,6 +19,7 @@ export default class Notice extends React.Component {
     this.getNotice()
   }
   componentDidMount() {
+    this.getData()
     this.startInterval(this.state.money/1)
   }
   getNotice() {
@@ -29,23 +31,26 @@ export default class Notice extends React.Component {
       }
     });
   }
+  getData() {
+    return this.fetchData().then(res => {
+      const data = res.data.data
+      this.setState({
+        nowMoney: data[0].price,
+        fetchTime: moment().format('HH:mm:ss')
+      })
+      if (data[0].price >= money) {
+        var n = new Notification('attention', {
+          body: data[0].price,
+          tag: data[0].price,
+          requireInteraction: true
+        })
+      }
+    })
+  }
   startInterval(money) {
     clearInterval(intervalBox)
     intervalBox = setInterval(() => {
-      this.fetchData().then(res => {
-        const data = res.data.data
-        this.setState({
-          nowMoney: data[0].price,
-          fetchTime: moment().format('HH:mm:ss')
-        })
-        if (data[0].price >= money) {
-          var n = new Notification('attention', {
-            body: data[0].price,
-            tag: data[0].price,
-            requireInteraction: true
-          })
-        }
-      })
+      this.getData()
     }, 20000)
   }
   fetchData() {
