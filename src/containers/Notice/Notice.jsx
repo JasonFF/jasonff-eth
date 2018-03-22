@@ -4,6 +4,11 @@ import moment from 'moment'
 
 let intervalBox = null
 
+let status = {
+  buy: false,
+  sell: false
+}
+
 export default class Notice extends React.Component {
   constructor() {
     super()
@@ -80,6 +85,7 @@ export default class Notice extends React.Component {
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public?coinId=2&tradeType=0&currentPage=1&payWay=&country=&merchant=1&online=1&range=0')
   }
   fetchBuyData(page) {
+    status.buy = false
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
       params: {
         coinId:2,
@@ -98,10 +104,13 @@ export default class Notice extends React.Component {
       })
       if(res.data.data.length == 10) {
         this.fetchBuyData(page+1)
+      } else {
+        status.buy = true
       }
     })
   }
   fetchSellData(page) {
+    status.sell = false
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
       params: {
         coinId:2,
@@ -120,6 +129,8 @@ export default class Notice extends React.Component {
       })
       if(res.data.data.length == 10) {
         this.fetchSellData(page+1)
+      } else {
+        status.sell = true
       }
     })
   }
@@ -174,7 +185,7 @@ export default class Notice extends React.Component {
   }
 }
 
-const BuyRecords = (list) => {
+const BuyRecords = (list, type) => {
   if (!list.length) {
     return
   }
@@ -195,10 +206,23 @@ const BuyRecords = (list) => {
     totalCount++
   })
   let avgPrice = (totalPrice/totalCount).toFixed(3)
+  
+  
+  let changePrice = 0
+  
+  if (status[type]) {
+    const beforeTotalPrice = window.localStorage.getItem(type)
+    if (beforeTotalPrice) {
+      changePrice = Math.abs(beforeTotalPrice/1 - totalPrice)
+    }
+    window.localStorage.setItem(type, totalPrice)
+  }
+
   return (
     <div>
       <div>平均：{avgPrice}</div>
       <div>商家数：{totalCount}</div>
+      <div>上次差额：{changePrice}</div>
 
       {
         Object.keys(priceLevel).map(it => {
