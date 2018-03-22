@@ -197,7 +197,9 @@ const BuyRecords = (list) => {
   let avgPrice = totalPrice/totalCount
   return (
     <div>
-      平均：{avgPrice}
+      <div>平均：{avgPrice}</div>
+      <div>商家数：{totalCount}</div>
+
       {
         Object.keys(priceLevel).map(it => {
           return <p key={it}>{it}: {priceLevel[it]}</p>
