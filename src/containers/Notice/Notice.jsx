@@ -31,7 +31,7 @@ export default class Notice extends React.Component {
       }
     });
   }
-  getData() {
+  getData(money) {
     return this.fetchData().then(res => {
       const data = res.data.data
       this.setState({
@@ -50,7 +50,7 @@ export default class Notice extends React.Component {
   startInterval(money) {
     clearInterval(intervalBox)
     intervalBox = setInterval(() => {
-      this.getData()
+      this.getData(money)
     }, 20000)
   }
   fetchData() {
