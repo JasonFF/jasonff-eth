@@ -13,6 +13,7 @@ export default class Notice extends React.Component {
     this.startInterval = this.startInterval.bind(this)
     this.getData = this.getData.bind(this)
     this.fetchHuilvData = this.fetchHuilvData.bind(this)
+    this.getHuobiHuilv = this.getHuobiHuilv.bind(this)
   }
   componentWillMount() {
     this.setState({
@@ -21,7 +22,8 @@ export default class Notice extends React.Component {
       fetchTime: '',
       buyList: [],
       sellList: [],
-      hl: ''
+      hl: '',
+      hbhl: ''
     })
     this.getNotice()
   }
@@ -29,6 +31,7 @@ export default class Notice extends React.Component {
     this.getData()
     this.getListData()
     this.fetchHuilvData()
+    this.getHuobiHuilv()
     this.startInterval(this.state.money/1)
   }
   getNotice() {
@@ -41,7 +44,7 @@ export default class Notice extends React.Component {
         }
       });
     } catch (e) {
-      alert(e)
+      // alert(e)
     }
     
   }
@@ -66,6 +69,23 @@ export default class Notice extends React.Component {
       }
     })
   }
+  getHuobiHuilv() {
+    return axios('https://otc-api.huobipro.com/v1/otc/base/market/price').then(res => {
+      try {
+        res.data.data.forEach(it => {
+          if (it.coinId == 2) {
+            this.setState({
+              hbhl: it.price
+            })
+          }
+        })
+      } catch(e) {
+        console.log(e)
+      }
+      
+      
+    })
+  }
   getListData() {
     let currentPage = 1
     this.fetchBuyData(currentPage)
@@ -81,6 +101,7 @@ export default class Notice extends React.Component {
       })
       this.getListData()
       this.fetchHuilvData()
+      this.getHuobiHuilv()
     }, 60000)
   }
   fetchData() {
@@ -167,7 +188,7 @@ export default class Notice extends React.Component {
       </div>
       
         <div>
-          <h2>汇率：{this.state.hl}</h2>
+          <h2>汇率：{this.state.hl} <small>hb: {this.state.hbhl}</small> </h2>
           <div style={{
             width:'50%',
             float: 'left',
