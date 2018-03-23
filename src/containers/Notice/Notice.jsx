@@ -14,6 +14,7 @@ export default class Notice extends React.Component {
     this.getData = this.getData.bind(this)
     this.fetchHuilvData = this.fetchHuilvData.bind(this)
     this.getHuobiHuilv = this.getHuobiHuilv.bind(this)
+    this.fetchGateIOData = this.fetchGateIOData.bind(this)
   }
   componentWillMount() {
     this.setState({
@@ -23,7 +24,8 @@ export default class Notice extends React.Component {
       buyList: [],
       sellList: [],
       hl: '',
-      hbhl: ''
+      hbhl: '',
+      gateio: ''
     })
     this.getNotice()
   }
@@ -32,6 +34,7 @@ export default class Notice extends React.Component {
     this.getListData()
     this.fetchHuilvData()
     this.getHuobiHuilv()
+    this.fetchGateIOData()
     this.startInterval(this.state.money/1)
   }
   getNotice() {
@@ -92,6 +95,7 @@ export default class Notice extends React.Component {
     this.fetchSellData(currentPage)
   }
   startInterval(money) {
+    return
     clearInterval(intervalBox)
     intervalBox = setInterval(() => {
       this.getData(money)
@@ -102,6 +106,7 @@ export default class Notice extends React.Component {
       this.getListData()
       this.fetchHuilvData()
       this.getHuobiHuilv()
+      this.fetchGateIOData()
     }, 60000)
   }
   fetchData() {
@@ -129,6 +134,20 @@ export default class Notice extends React.Component {
       } else {
       }
     })
+  }
+  fetchGateIOData() {
+    // try {
+    //   jsonp('https://gate.io/json_svr/query_push/?u=13&c=224976&type=push_main_rates&symbol=USDT_CNY', null, (err, res) => {
+    //   console.log(err)
+    //   console.log(res)
+    //   // this.setState({
+    //   //   gateio: res.data.appraised_rates.sell_rate
+    //   // })
+    // })
+    // } catch(e) {
+    //   console.log(e)
+    // }
+     
   }
   fetchSellData(page) {
     return axios('https://otc-api.huobipro.com/v1/otc/trade/list/public', {
@@ -166,6 +185,9 @@ export default class Notice extends React.Component {
     })
     this.startInterval(value/1)
   }
+  onerror(e) {
+    console.log(e)
+  }
   render() {
 
     return ( 
@@ -175,10 +197,12 @@ export default class Notice extends React.Component {
         color: '#eee',
         minHeight: '100%'
       }}>
+      <link src="https://gate.io/json_svr/query_push/?u=13&c=224976&type=push_main_rates&symbol=USDT_CNY" onError={e => this.onerror(e)}/>
       <div style={{
         marginBottom: '30px'
       }}>
-        <h2>{this.state.nowMoney}</h2>
+        <h2>{this.state.nowMoney} <small>gateIo: {this.state.gateio}</small>    </h2>
+
         <h3>{this.state.fetchTime}</h3>
           <input type = "text"
           value={this.state.money}
